@@ -30,7 +30,6 @@ class PokemonEnv(gym.Env):
         
         # Preparar o emulador carregando o estado do jogo
         self._initialize_game()
-        self.pyboy.set_emulation_speed(6)
 
         self.step_count = 0
         self.max_steps = 10000
@@ -106,14 +105,9 @@ class PokemonEnv(gym.Env):
         # Carrega o estado inicial do jogo pós puzzles iniciais
         with open('PokemonRed.gb.state', "rb") as f:
             self.pyboy.load_state(f)
-        # self.pyboy.tick()
+        self.pyboy.set_emulation_speed(6)
 
     def _calculate_reward(self, position):
-        # # Se a posição é nova, recompensa positiva
-        # if position not in self.visited_positions:
-        #     return 3.0  # Recompensa por visitar uma nova posição
-        # else:
-        #     return -0.05  # Penalidade leve por revisitar uma posição conhecida
         if self.initial_position is None:
             return 0.0
         
@@ -121,13 +115,28 @@ class PokemonEnv(gym.Env):
         distance = math.sqrt((position[0] - self.initial_position[0]) ** 2 + 
                              (position[1] - self.initial_position[1]) ** 2)
         # Recompensa baseada na distância
-        reward = distance * 0.1  # Ajuste o fator de multiplicação conforme necessário
+        reward = distance * 0.025  # Ajuste o fator de multiplicação conforme necessário
+
+        # Checa se o personagem entrou numa batalha
+        # if self.pyboy.memory[0xD057] == 1: 
+        #      reward += self._check_new_pokemon()        
         return reward
         
     def reset_emulator(self):
         self.pyboy.stop()
         self.pyboy = PyBoy('PokemonRed.gb')  # Recria o emulador
         self.pyboy.set_emulation_speed(6)
+
+    # def _check_new_pokemon(self):
+        # Checa se um novo Pokémon foi encontrado
+        # new_pokemon_reward = 0
+
+        # for i in range(0xD30A, 0xD31D):
+        #     current_value = self.pyboy.memory[i]
+        #     if current_value == 0:
+        #         new_pokemon_reward = 10  # Recompensa para encontrar um novo Pokémon
+        #         print('NOVO POKEMON VISTO!')
+        # return new_pokemon_reward
 
 
 # Envolver o ambiente com Monitor e DummyVecEnv
