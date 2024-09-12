@@ -4,6 +4,7 @@ from gymnasium import spaces
 from pyboy import PyBoy
 import numpy as np
 from PIL import Image
+import math
 
 class PokemonEnv(gym.Env):
     def __init__(self):
@@ -34,6 +35,9 @@ class PokemonEnv(gym.Env):
         self.step_count = 0
         self.max_steps = 10000
         self.visited_positions.clear()
+
+        # Definir a posição inicial
+        self.initial_position = self._get_position()
         
         return self._get_state(), {}
 
@@ -105,11 +109,20 @@ class PokemonEnv(gym.Env):
         # self.pyboy.tick()
 
     def _calculate_reward(self, position):
-        # Se a posição é nova, recompensa positiva
-        if position not in self.visited_positions:
-            return 3.0  # Recompensa por visitar uma nova posição
-        else:
-            return -0.05  # Penalidade leve por revisitar uma posição conhecida
+        # # Se a posição é nova, recompensa positiva
+        # if position not in self.visited_positions:
+        #     return 3.0  # Recompensa por visitar uma nova posição
+        # else:
+        #     return -0.05  # Penalidade leve por revisitar uma posição conhecida
+        if self.initial_position is None:
+            return 0.0
+        
+        # Calcula a distância euclidiana da posição atual para a posição inicial
+        distance = math.sqrt((position[0] - self.initial_position[0]) ** 2 + 
+                             (position[1] - self.initial_position[1]) ** 2)
+        # Recompensa baseada na distância
+        reward = distance * 0.1  # Ajuste o fator de multiplicação conforme necessário
+        return reward
         
     def reset_emulator(self):
         self.pyboy.stop()
