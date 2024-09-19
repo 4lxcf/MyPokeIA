@@ -1,14 +1,17 @@
-from PokemonRedEnv import PokemonRedEnv
+from PokemonRedEnv import PokemonRedEnv 
 
-env = PokemonRedEnv()
-episodes = 5
+if __name__ == "__main__":
+    # Inicialize o ambiente
+    env = PokemonRedEnv('D:\Dev\MyPokeIA\PokemonRed.gb')
 
-for episode in range(episodes):
-    done = False
-    obs = env.reset()
-    while not done:
+    # Resetar o ambiente
+    observation = env.reset()
+    print(f"Observação Inicial: {observation}")
+
+    for _ in range(500):
         random_action = env.action_space.sample()
-        print("action", random_action)
-        obs, reward, done, info = env.step(random_action)
-        print("reward", reward)
-        print("info", info)
+        observation, reward, terminated, info = env.step(random_action)
+        print(f"Observação: {observation}, Recompensa: {reward}, Terminado: {terminated}, Info: {info}")
+        
+    print("O episódio terminou.")
+    env.close()
