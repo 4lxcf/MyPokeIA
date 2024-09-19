@@ -11,7 +11,7 @@ if __name__ == "__main__":
     for _ in range(100000):
         random_action = env.action_space.sample()
         observation, reward, terminated, info = env.step(random_action)
-        print(f"Observação: {observation}, Recompensa: {reward}, Terminado: {terminated}")
+        print(f"Observação: {observation}, Recompensa: {reward}, Terminado: {terminated}, Info: {info}")
         
     print("O episódio terminou.")
     env.close()

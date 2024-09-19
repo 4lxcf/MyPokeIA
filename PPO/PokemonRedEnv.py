@@ -50,27 +50,32 @@ class PokemonRedEnv(gym.Env):
         terminated = {}
 
         # Atualizar a lista de posições visitadas
-        self.visited_positions.add((map_id, pos_x, pos_y))
+        actual_position = (map_id, pos_x, pos_y)
+        if actual_position in self.visited_positions:
+            self.visited_positions[actual_position] += 1
+        else:
+            self.visited_positions[actual_position] = 1
 
         # 6. Informações adicionais
-        info = {}  # Pode ser um dicionário com informações adicionais, se necessário
+        info = {f"Tamanho de self.visited_positions:{len(self.visited_positions)}"}  # Pode ser um dicionário com informações adicionais, se necessário
 
         return observation, reward, terminated, info
 
     def reset(self):
-        # 1. Carregar o estado salvo no início do jogo
+        # Carregar o estado salvo no início do jogo
         with open('D:\Dev\MyPokeIA\PokemonRed.gb.state', "rb") as f:
             self.pyboy.load_state(f)
 
-        # 2. Ler os valores dos três endereços de memória
+        # Ler os valores dos três endereços de memória
         map_id = self.pyboy.memory[0xD35E]  # ID do mapa
         pos_x = self.pyboy.memory[0xD362]   # Posição X do personagem
         pos_y = self.pyboy.memory[0xD361]   # Posição Y do personagem
         observation = np.array([map_id, pos_x, pos_y], dtype=np.uint8)
 
-        # 3. Inicializar o conjunto de posições visitadas
-        self.visited_positions = set()
-        self.visited_positions.add((map_id, pos_x, pos_y))
+        # Inicializar o conjunto de posições visitadas
+        self.visited_positions = {}
+        actual_position = (map_id, pos_x, pos_y)
+        self.visited_positions[actual_position] = 1
 
         # Inicializar terminated como False
         terminated = {}
