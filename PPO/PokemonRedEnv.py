@@ -15,7 +15,7 @@ class PokemonRedEnv(gym.Env):
         self.observation_space = spaces.Box(low=np.array([0, 0, 0]), high=np.array([255, 255, 255]), dtype=np.uint8)
 
         self.pyboy = PyBoy(rom_path)
-        self.pyboy.set_emulation_speed(3)
+        self.pyboy.set_emulation_speed(9)
 
     def step(self, action):
         # Executa a ação usando a função button()
@@ -47,7 +47,8 @@ class PokemonRedEnv(gym.Env):
         reward = self.calculate_reward((map_id, pos_x, pos_y))  # Defina a lógica de recompensa conforme necessário
 
         # Verificar se o episódio terminou
-        terminated = {}
+        terminated = False
+        truncated = False
 
         # Atualizar a lista de posições visitadas
         actual_position = (map_id, pos_x, pos_y)
@@ -57,11 +58,15 @@ class PokemonRedEnv(gym.Env):
             self.visited_positions[actual_position] = 1
 
         # 6. Informações adicionais
-        info = {f"Tamanho de self.visited_positions:{len(self.visited_positions)}"}  # Pode ser um dicionário com informações adicionais, se necessário
+        info = {"visited_positions_size": len(self.visited_positions)}
 
-        return observation, reward, terminated, info
+        return observation, reward, terminated, truncated, info
 
-    def reset(self):
+    def reset(self, seed=None, options={}):
+        # Se o seed for fornecido, defina a semente do ambiente
+        if seed is not None:
+            np.random.seed(seed)
+
         # Carregar o estado salvo no início do jogo
         with open('D:\Dev\MyPokeIA\PokemonRed.gb.state', "rb") as f:
             self.pyboy.load_state(f)
@@ -78,15 +83,15 @@ class PokemonRedEnv(gym.Env):
         self.visited_positions[actual_position] = 1
 
         # Inicializar terminated como False
-        terminated = {}
+        terminated = False
 
-        return observation, terminated
+        return observation
     
     def calculate_reward(self, observation):
         # Recompensa por visitar novas posições
         if observation not in self.visited_positions:
             reward = 1  # Recompensa positiva por descobrir uma nova posição
         else:
-            reward = 0  # Nenhuma recompensa por visitar uma posição já conhecida
+            reward = -0.1  # Nenhuma recompensa por visitar uma posição já conhecida
 
         return reward
