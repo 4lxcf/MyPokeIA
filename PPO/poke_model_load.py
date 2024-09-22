@@ -4,7 +4,7 @@ from PokemonRedEnv import PokemonRedEnv
 env = PokemonRedEnv("D:\Dev\MyPokeIA\PokemonRed.gb")
 env.reset()
 
-model_path = 'models/1726791256/100000.zip'
+model_path = 'models/1726796713/990000.zip'
 
 model = PPO.load(model_path, env=env)
 
