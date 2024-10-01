@@ -16,12 +16,14 @@ if not os.path.exists(logdir):
 env = PokemonRedEnv("D:\Dev\MyPokeIA\PokemonRed.gb")
 env.reset()
 
-model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logdir)
+model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log=logdir, learning_rate=0.00003)
 
-episodes = 50
-TIMESTEPS = 2048*50
-for episode in episodes:
-    model.learn(total_timesteps=TIMESTEPS, progress_bar=True, tb_log_name=f"PPO-ep{episode}")
-    model.save(f"{models_dir}/model_TIMESTEPS{TIMESTEPS}_LR{model.learning_rate}_EP{episode}")
+# episodes = 5
+TIMESTEPS = 2048*490
+# for episode in range(episodes):
+    # model.learn(total_timesteps=TIMESTEPS, progress_bar=True, tb_log_name=f"PPO-ep{episode}")
+    # model.save(f"{models_dir}/model_TIMESTEPS{TIMESTEPS}_LR00003_EP{episode}")
+model.learn(total_timesteps=TIMESTEPS, progress_bar=True, tb_log_name=f"PPO")
+model.save(f"{models_dir}/model_TIMESTEPS{TIMESTEPS}_LR00003")
 
 env.close()
