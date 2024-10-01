@@ -51,6 +51,7 @@ class PokemonRedEnv(gym.Env):
 
         observation = self.get_observation() # Atualiza a observation
 
+        self.reward_log = [] # Inclui lista que guardará o LOG das recompensas
         return observation, {}
 
     def step(self, action):
@@ -60,9 +61,9 @@ class PokemonRedEnv(gym.Env):
         self.step_count += 1
 
         observation = self.get_observation()
-        reward = self.calculate_reward() 
+        reward = self.calculate_reward(action) # Passa ação para subir no LOG 
         terminated = self.check_if_terminated()
-        info = {f"Agent_Stats:": self.agent_stats} # Infos adicionais
+        info = {f"Agent_Stats:": self.agent_stats, "Reward_Log": self.reward_log} # Infos adicionais + LOG de Recompensas
 
         return observation, reward, terminated, False, info
 
@@ -113,29 +114,48 @@ class PokemonRedEnv(gym.Env):
         is_Terminated = self.step_count >= self.max_steps
         return is_Terminated
 
-    def calculate_reward(self):
+    def calculate_reward(self, action):
         reward = 0
         level_sum = self.get_levels_sum()
         visited_positions_count = len(self.visited_positions)
         map_id = self.pyboy.memory[0xD35E]
-        
-        if level_sum > self.max_levels:
-            reward += level_sum - self.max_levels
+                
+        # Recompensa por Level Up
+        if level_sum > self.max_levels: 
+            incremental_reward = level_sum - self.max_levels
+            reward += incremental_reward
             self.max_levels = level_sum
-
+            self.log_reward(action, incremental_reward, "Level Up", level_sum)
+            
+        # Recompensa por nova posição visitada
         if visited_positions_count > self.max_visited_positions:
-            reward += 0.04 * (visited_positions_count - self.max_visited_positions)
+            incremental_reward = 0.04 * (visited_positions_count - self.max_visited_positions)
+            reward += incremental_reward
             self.max_visited_positions = visited_positions_count
+            self.log_reward(action, incremental_reward, "New Position", visited_positions_count)
 
         # Recompensa adicional por entrar em uma nova área (map_id)
         if map_id not in self.visited_areas:  # Verifica se o ID da área já foi visitado
             if map_id in locations_rewards:  # Verifica se o map_id existe em locations_rewards
-                reward += locations_rewards[map_id]["reward"]  # Adiciona a recompensa da área
+                incremental_reward = locations_rewards[map_id]["reward"] Calcula a recompensa da área
+                reward += incremental_reward  # Adiciona a recompensa da área
+                self.log_reward(action, incremental_reward, "New Area", locations_rewards[map_id]["name"])
                 self.visited_areas.add(map_id)  # Adiciona o ID da área à lista de áreas visitadas
                 print(self.agent_stats)
 
         return reward
-    
+
+    # Função para registrar LOG de recompensas
+    def log_reward(self, action, incremental_reward, reason, detail):
+        log_entry = {
+            "step": self.step_count,
+            "action": action,
+            "reward": incremental_reward, # Registra recompensa incremental
+            "reason": reason,
+            "detail": detail
+        }
+        self.reward_log.append(log_entry)
+        
     def get_levels_sum(self):
         poke_levels = [
             self.pyboy.memory[addr]
