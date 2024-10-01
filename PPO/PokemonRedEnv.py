@@ -51,7 +51,7 @@ class PokemonRedEnv(gym.Env):
 
         observation = self.get_observation() # Atualiza a observation
 
-        return observation
+        return observation, {}
 
     def step(self, action):
         self.make_action(action)
@@ -151,7 +151,8 @@ class PokemonRedEnv(gym.Env):
         resized_screen = resize(resized_screen, (self.new_height, self.new_width), anti_aliasing=True)
 
         # Ajustar a tela para ter 3 canais, replicando o canal único
-        resized_screen = np.repeat(resized_screen, 3, axis=-1)
+        # --> Só é NECESSÁRIO no LOAD do agente <--
+        # resized_screen = np.repeat(resized_screen, 3, axis=-1)
 
         observation = {
             "screen": resized_screen,
